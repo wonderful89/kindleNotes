@@ -147,6 +147,7 @@ def getMark(s):  #获取标注内容
 
 # 分割函数实现利用关键词进行简单的分割成列表
 # 结果为每一条单独的笔记，包含书名，时间，位置和内容
+# f = open("My Clippings.txt", "r", encoding='utf-8')
 f = open("source.txt", "r", encoding='utf-8')
 content = f.read()  # 读取全部内容
 content = content.replace(u'\ufeff', u'') #替换书名前的空格
