@@ -11,6 +11,7 @@ print('nowTime = ', nowTime)
 
 TEMP_FOLDER = "out" # 临时文件夹
 FILE_SUFFIX = nowTime+".markdown" # 文件后缀名
+FILE_COUNT_SENTENCE = "FILE_COUNT_SENTENCE"
 BOUNDARY = u"==========\n" #分隔符
 intab = "\/:*?\"<>|"
 outtab = "  ： ？“《》 "     #用于替换特殊字符
@@ -86,6 +87,7 @@ for j in range(0,nameOfBooks.__len__()):
 
     f = open(nameOfBooks[j]+FILE_SUFFIX,'w',encoding='utf-8') # 创建网页文件
     f.write('# '+nameOfBooks[j]+'\n\n') #写入书名
+    f.write('    '+'共' + FILE_COUNT_SENTENCE +'条评论'+'\n') #临时评论数目
     f.close()
     stceOfBookCnt.__setitem__(nameOfBooks[j],0)  # 清零每本书的标注数量
 
@@ -118,6 +120,15 @@ for j in range(0,sentence.__len__()):
 print("sentence add succ cnt = ",stce_succ_cnt)
 print("sentence add fail cnt = ",stce_fail_cnt)
 #print(stceOfBookCnt)
+
+# 添加总条数信息
+for i in range(0,file_list.__len__()):
+    f = open(file_list[i],'w+',encoding='utf-8') #打开对应的文件
+    content = f.read()  # 读取全部内容
+    print('content=', content)
+    content.replace(FILE_COUNT_SENTENCE, str(111))
+    f.write(content)
+    f.close()
 
 #向文件添加脚标
 #print("html name:",os.listdir())
