@@ -5,20 +5,28 @@ import shutil
 import random
 import string
 import datetime
+from operator import itemgetter, attrgetter
 
 nowTime = datetime.datetime.now().strftime("_%Y-%m-%d")  # 现在
 print("nowTime = ", nowTime)
 
 BooksInfo = {
-    "当我们谈论爱情的时候": {
+    "当我们谈论爱情": {
         "chapters": [
-            {"index": 0, "name": "第1章", "pos": 0},
+            {"index": 0, "name": "第1章", "pos": 0, "contents": []},
             {"index": 1, "name": "第2章", "pos": 200},
             {"index": 2, "name": "第3章", "pos": 800},
             {"index": 3, "name": "第4章", "pos": 2220},
         ]
     }
 }
+
+curBookInfo = [
+    {"index": 0, "name": "第1章", "pos": 0, "contents": []},
+    {"index": 1, "name": "第2章", "pos": 200, "contents": []},
+    {"index": 2, "name": "第3章", "pos": 800, "contents": []},
+    {"index": 3, "name": "第4章", "pos": 2220, "contents": []},
+]
 
 TEMP_FOLDER = "out"  # 临时文件夹
 FILE_SUFFIX = nowTime + ".markdown"  # 文件后缀名
@@ -40,6 +48,28 @@ def getTimeShow(s):  # 获取显示的时间 '添加于 2018年11月18日星期�
     matchObj = re.match(r"添加于 (.*)年(.*)月(.*)日星期(.*)", s, re.M | re.I)  # 2018.11.18
     retStr = matchObj.group(1) + "." + matchObj.group(2) + "." + matchObj.group(3)
     return retStr
+
+
+def getBeginPos(s):  # 您在位置 #271-274的标注 //您在位置 #1602 的笔记
+    matchObj = re.match(r"(.*)#(.*)-(.*)的标注(.*)", s, re.M | re.I)  # 的笔记
+    matchObj2 = re.match(r"(.*)#(.*) 的笔记(.*)", s, re.M | re.I)  # 的笔记
+    retStr = "0"
+    if matchObj:
+        retStr = matchObj.group(2)
+    if matchObj2:
+        retStr = matchObj2.group(2)
+    return retStr
+
+
+def appendContent(curBookInfo, content, beginPos):
+    beginPosN = int(beginPos)
+    findObj = {"contents": []}
+    for obj in curBookInfo:
+        if obj["pos"] > beginPosN:
+            break
+        findObj = obj
+    print(findObj["index"])
+    findObj["contents"].append((content, beginPosN))
 
 
 # 处理sentence列表的方法函数
@@ -138,9 +168,12 @@ for j in range(0, sentence.__len__()):
             stce_succ_cnt += 1
             cnt_temp = stceOfBookCnt[filename]
             stceOfBookCnt[filename] = cnt_temp + 1
-            f.write("\n### " + str(cnt_temp + 1) + ". " + s3)
-            f.write("\n    " + s2 + " &&" + s1 + "\n")
-            f.write("\n")
+            # senContent = "\n### " + str(cnt_temp + 1) + ". " + s3
+            senContent = s3
+            senContent = senContent + "\n    " + s2 + " &&" + s1 + "\n"
+            senContent = senContent + "\n"
+            f.write(senContent)
+            appendContent(curBookInfo, senContent, getBeginPos(s1))
             if stce_succ_cnt == 1:
                 stceOfBookCnt[filename + BEGAN_TIME] = getTimeShow(s2)
         else:
@@ -152,7 +185,21 @@ for j in range(0, sentence.__len__()):
         print("can't find filename html :", temp[0] + ".html")
 print("sentence add succ cnt = ", stce_succ_cnt)
 print("sentence add fail cnt = ", stce_fail_cnt)
+
+for obj in curBookInfo:
+    curList = obj["contents"]
+    print("curList = ", curList)
+    obj["contents"] = sorted(curList, key=itemgetter(1), reverse=False)
+print(curBookInfo)
 # print(stceOfBookCnt)
+
+f = open("test.markdown", "w", encoding="utf-8")  # 打开对应的文件
+for obj in curBookInfo:
+    curList = obj["contents"]
+    f.write("## " + obj["name"] + "\n\n")
+    for index, (item, pos) in enumerate(curList):
+        f.write("\n### " + str(index + 1) + ". " + item)
+f.close()
 
 # 添加总条数信息
 for i in range(0, file_list.__len__()):
