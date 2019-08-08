@@ -2,3 +2,5 @@
 .idea
 My Clippings.txt
 out/
+libs/__pycache__/
+__pycache__/
