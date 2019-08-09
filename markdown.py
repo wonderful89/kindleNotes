@@ -6,6 +6,7 @@ import shutil
 import random
 import string
 import datetime
+import threading
 from operator import itemgetter, attrgetter
 import sys
 
@@ -13,23 +14,16 @@ sys.path.append("libs/")
 
 import util
 import book
+import config1
 
+lock = threading.RLock()  # 操作allBooks的锁
+
+inputFile = "source.txt"
+inputFile = "My Clippings.txt"
 nowTime = datetime.datetime.now().strftime("_%Y-%m-%d")  # 现在
 # print("nowTime = ", nowTime)
 
-book1 = book.BookInfo(
-    "当我们谈论爱情",
-    [
-        book.Chapter("第1章", [], 0),
-        book.Chapter("第2章", [], 400),
-        book.Chapter("第3章", [], 800),
-        book.Chapter("第4章", [], 2220),
-    ],
-    [],
-)
-
-book2 = book.BookInfo("当我们谈论爱情2", [], [])
-allBooks = [book1, book2]
+allBooks = config1.allBooks
 
 TEMP_FOLDER = "out"  # 临时文件夹
 FILE_SUFFIX = nowTime + ".markdown"  # 文件后缀名
@@ -42,8 +36,7 @@ END_TIME = "END_TIME"  # 结束时间
 # 结果为每一条单独的笔记，包含书名，时间，位置和内容
 def init():
     BOUNDARY = u"==========\n"  # 分隔符
-    # f = open("My Clippings.txt", "r", encoding='utf-8')
-    f = open("source.txt", "r", encoding="utf-8")
+    f = open(inputFile, "r", encoding="utf-8")
     content = f.read()  # 读取全部内容
     content = content.replace(u"\ufeff", u"")  # 替换书名前的空格
     clips = content.split(BOUNDARY)
@@ -89,16 +82,13 @@ stceOfBookCnt = {}  # 记录每本书有几条标注的字典
 # print(os.listdir())
 
 
-def findBook(name, list):
+def findBook(name, inputI):
     found = book.BookInfo(name, [], [])
-    for curBook in list:
+    for curBook in inputI:
         if name.startswith(curBook.name):
             curBook.name = name
             found = curBook
             break
-        else:
-            # print("allBooks.append")
-            allBooks.append(found)
     return found
 
 
@@ -108,12 +98,18 @@ for j in range(0, nameOfBooks.__len__()):
         nameOfBooks[j] = nameOfBooks[j][0:80]  # 截取字符串
 
     curBook = findBook(nameOfBooks[j], allBooks)
+    for ccBook in allBooks:
+        if ccBook.name == curBook.name:
+            break
+        else:
+            allBooks.append(curBook)
+            break
     print("ccc = ", curBook.name)
     curBook.fileName = nameOfBooks[j] + FILE_SUFFIX
     stceOfBookCnt[curBook.fileName] = 0
 
     header = "# " + nameOfBooks[j] + "\n\n"  # 写入书名
-    header = header + "  " + "共 `" + FILE_COUNT_SENTENCE + "` 条评论" + " , "  # 临时评论数目
+    header = header + "  " + "共 `" + FILE_COUNT_SENTENCE + "` 条标注" + " , "  # 临时评论数目
     header = header + "`" + BEGAN_TIME + "--" + END_TIME + "`"
     header = header + "\n\n\n"
     curBook.header = header
@@ -143,7 +139,7 @@ for j in range(0, sentence.__len__()):
             curBook.appendChapterSen(curSen)
         else:
             curBook.appendSen(curSen)
-        if stce_succ_cnt == 1:
+        if curBook.sentenceLen() == 1:
             curBook.beginTime = util.getTimeShow(s2)
     else:
         stce_fail_cnt += 1
@@ -152,14 +148,14 @@ for j in range(0, sentence.__len__()):
 
 print("sentence add succ cnt = ", stce_succ_cnt)
 print("sentence add fail cnt = ", stce_fail_cnt)
-
+print("allBooks length = ", len(allBooks))
 # 添加总条数信息
 for curBook in allBooks:
     fileName = curBook.fileName
-    print("fileName=", fileName)
+    # print("fileName=", fileName)
     f = open(fileName, "w+", encoding="utf-8")  # 打开对应的文件
     header = curBook.header
-    # header = header.replace(FILE_COUNT_SENTENCE, str(stceOfBookCnt[fileName]))
+    header = header.replace(FILE_COUNT_SENTENCE, str(curBook.sentenceLen()))
     header = header.replace(BEGAN_TIME, curBook.beginTime)
     header = header.replace(END_TIME, curBook.endTime)
     f.write(header)
@@ -168,11 +164,12 @@ for curBook in allBooks:
         for chapter in curBook.chapters:
             chapter.sortSen()
             f.write("## " + chapter.name + "\n\n")
+            f.write("  **本章共`" + str(len(chapter.sentences)) + "`条标注**\n\n")
             for index, sen in enumerate(chapter.sentences):
-                f.write("### " + str(index + 1) + ". " + sen.content + "")
+                f.write("#### " + str(index + 1) + ". " + sen.content + "")
     else:
         for index, sen in enumerate(curBook.sentences):
-            f.write("### " + str(index + 1) + ". " + sen.content + "")
+            f.write("#### " + str(index + 1) + ". " + sen.content + "")
 
     f.write("文件生成时间: " + str(datetime.datetime.now()))
     f.close()

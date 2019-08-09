@@ -18,7 +18,7 @@
 （如果报错`TypeError: 'encoding' is an invalid keyword argument for this function`,需要执行 `python3 demo.py` 指令）
 
 
-## TODO
+## 功能列表
 
-1. 按照章节，先后排序
-2. 统计总数, 开始时间，结束时间
+1. 按照章节，先后排序(完成，但是需要录入章节信息)
+2. 统计总数, 开始时间，结束时间(已完成)

@@ -1,30 +1,29 @@
 from operator import itemgetter, attrgetter
+import json
 
 
 class AttrDisplay:
-    def gatherAttrs(self):
-        return ",".join(
-            "{}={}".format(k, getattr(self, k)) for k in self.__dict__.keys()
-        )
-        # attrs = []
-        # for k in self.__dict__.keys():
-        #     item = "{}={}".format(k, getattr(self, k))
-        #     attrs.append(item)
-        # return attrs
-        # for k in self.__dict__.keys():
-        #     attrs.append(str(k) + "=" + str(self.__dict__[k]))
-        # return ",".join(attrs) if len(attrs) else "no attr"
+    def asdict(self):
+        return ""
+
+    def toJSONStr(self):
+        return json.dumps(self.asdict(), sort_keys=True, indent=4)
 
     def __str__(self):
-        return "[{}:{}]".format(self.__class__.__name__, self.gatherAttrs())
+        jsonStr = json.dumps(self.asdict(), sort_keys=True, indent=4)
+        return jsonStr
 
 
 class Sentence(AttrDisplay):
     content = ""
     pos = 0
 
-    # def __str__(self):
-    #     return '{content: "' + self.content + '", pos:' + str(self.pos) + "}"
+    def __iter__(self):
+        yield "content", self.content
+        yield "pos", self.pos
+
+    def asdict(self):
+        return {"content": self.content, "pos": self.pos}
 
     def __init__(self, content, pos):
         self.content = content
@@ -35,6 +34,17 @@ class Chapter(AttrDisplay):
     sentences = []
     name = ""
     pos = 0
+
+    def __iter__(self):
+        yield "name", self.name
+        yield "pos", self.pos
+        # yield "sentences", dict(self.sentences)
+
+    def asdict(self):
+        newSens = []
+        for cusSen in self.sentences:
+            newSens.append(cusSen.asdict())
+        return {"name": self.name, "pos": self.pos, "sentences": newSens}
 
     # def __str__(self):
     #     return "{sentences: " + str(self.sentences) + ", name:" + self.name + "}"
@@ -61,6 +71,23 @@ class BookInfo(AttrDisplay):
     header = ""  # 输入到文件中
     content = ""
     end = ""
+
+    def asdict(self):
+        chaptersT = []
+        sensT = []
+        for sen in self.sentences:
+            sensT.append(sen.asdict())
+        for chapter in self.chapters:
+            chaptersT.append(chapter.asdict())
+        return {
+            "name": self.name,
+            "beginTime": self.beginTime,
+            "endTime": self.endTime,
+            "fileName": self.fileName,
+            "hasChapter": self.hasChapter,
+            "sentences": sensT,
+            "chapters": chaptersT,
+        }
 
     def __init__(self, name, chapters, sentences):
         self.name = name
@@ -89,3 +116,10 @@ class BookInfo(AttrDisplay):
         for chapter in self.chapters:
             chapter.sortSen()
 
+    def sentenceLen(self):
+        if self.hasChapter == False:
+            return len(self.sentences)
+        total = 0
+        for chapter in self.chapters:
+            total += len(chapter.sentences)
+        return total
