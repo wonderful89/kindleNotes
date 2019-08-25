@@ -52,6 +52,8 @@ class BookSpider(scrapy.Spider):
         # urls = ["http://www.shuwu.mobi/download.php?id=30013"]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
+            # yield scrapy.Request(url=url, callback=self.parseDownloadPage)
+            # yield scrapy.Request(url=url, callback=self.parseInfoPage)
 
     def parse(self, response):
         appsection = response.css("#primary .list")
@@ -59,8 +61,11 @@ class BookSpider(scrapy.Spider):
         for app in apps:
             url = app.css(".content h2 a::attr(href)").get()
             # p = urlparse(url)
-            yield scrapy.Request(url=url, callback=self.parse)
+            yield scrapy.Request(url=url, callback=self.parseDownloadPage)
+        # self.parseDownloadPage(response)
+        # self.parseInfoPage(response)
 
+    def parseDownloadPage(self, response):
         downUrl = response.css(".downlink strong a::attr(href)").get()
         print("downUrl = {}".format(downUrl))
         if downUrl:
@@ -71,8 +76,10 @@ class BookSpider(scrapy.Spider):
             title = getFileName(title)
             descs = response.css("#link-report .intro span::text").get()
             booksInfo.__setitem__(title, (imgUrl, descs))
-            yield scrapy.Request(url=downUrl, callback=self.parse)
+            # yield 应该是直接返回调用流
+            yield scrapy.Request(url=downUrl, callback=self.parseInfoPage)
 
+    def parseInfoPage(self, response):
         downUrlInfo = response.css("body .list a")
         if downUrlInfo:
             outInfo = {"channels": []}
@@ -119,7 +126,7 @@ class BookSpider(scrapy.Spider):
                 )
             markDownStr += "\n"
             f.write(markDownStr)
-            yield (outInfo)
+            yield outInfo
 
 
 # f.close()
