@@ -47,7 +47,7 @@ class BookSpider(scrapy.Spider):
     name = "book"
 
     def start_requests(self):
-        urls = ["http://www.shuwu.mobi/date/2019/08"]
+        urls = ["http://www.shuwu.mobi/date/2019/08/page/1"]
         # urls = ["http://www.shuwu.mobi/30011.html"]
         # urls = ["http://www.shuwu.mobi/download.php?id=30013"]
         for url in urls:
@@ -61,6 +61,10 @@ class BookSpider(scrapy.Spider):
         for app in apps:
             url = app.css(".content h2 a::attr(href)").get()
             # p = urlparse(url)
+            title = app.css(".content h2 a::attr(title)").get()
+            title = getFileName(title)
+            if title:
+                booksInfo.__setitem__(title, {"infoUrl": url})
             yield scrapy.Request(url=url, callback=self.parseDownloadPage)
         # self.parseDownloadPage(response)
         # self.parseInfoPage(response)
@@ -75,7 +79,10 @@ class BookSpider(scrapy.Spider):
             title = response.css("#container-inner #primary .sub::text").get()
             title = getFileName(title)
             descs = response.css("#link-report .intro span::text").get()
-            booksInfo.__setitem__(title, (imgUrl, descs))
+            dictInfo = booksInfo[title]
+            dictInfo["imgUrl"] = imgUrl
+            dictInfo["descs"] = descs
+            booksInfo.__setitem__(title, dictInfo)
             # yield 应该是直接返回调用流
             yield scrapy.Request(url=downUrl, callback=self.parseInfoPage)
 
@@ -84,8 +91,11 @@ class BookSpider(scrapy.Spider):
         if downUrlInfo:
             outInfo = {"channels": []}
             markDownStr = ""
-            for downInfo in downUrlInfo:
+            # curIndex = 0
+            for index, downInfo in enumerate(downUrlInfo):
                 # print("downInfo:", downInfo)
+                curIndex = index + 1
+                print("curIndex = ", curIndex)
                 realDownloadUrl = downInfo.css("a::attr(href)").get()
                 text = downInfo.css("a::text").get()
                 text2 = downInfo.css("a font::text").get()
@@ -113,15 +123,22 @@ class BookSpider(scrapy.Spider):
                     {"channel": text, "url": realDownloadUrl, "secret": secretStr}
                 )
             # yield (outInfo)
-            markDownStr += "{}: {}\n".format(outInfo["name"], outInfo["time"])
+            markDownStr += "### {}. {}: {}\n".format(
+                curIndex, outInfo["name"], outInfo["time"]
+            )
             bookInfo = booksInfo[name]
             if bookInfo:
-                (img, desc) = bookInfo
+                imgUrl = bookInfo["imgUrl"]
+                descs = bookInfo["descs"]
+                infoUrl = bookInfo["infoUrl"]
                 # markDownStr += "![]({})\n".format(img)
-                markDownStr += '<img src="{}" width="120" align=center />\n'.format(img)
-                markDownStr += "```\n{}\n```\n".format(desc)
+                markDownStr += '<img src="{}" width="120" align=center />\n'.format(
+                    imgUrl
+                )
+                markDownStr += "```\n{}\n```\n".format(descs)
+                markDownStr += "[点击查看介绍界面]({})\n".format(infoUrl)
             for cc in outInfo["channels"]:
-                markDownStr += "{}: [点击下载]({}) :{}\n".format(
+                markDownStr += "{}: [点击下载]({}) : {}\n".format(
                     cc["channel"], cc["url"], cc["secret"]
                 )
             markDownStr += "\n"
