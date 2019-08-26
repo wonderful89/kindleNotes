@@ -1,0 +1,20 @@
+{
+    "baiduId": "your baidu id",
+    "baiduS": "your baidu secret",
+    "baiduIdXpath": "//*[@id=\"TANGRAM__PSP_4__userName\"]",
+    "baiduSXpath": "//*[@id=\"TANGRAM__PSP_4__password\"]",
+    "baiduChangeSecret": "//*[@id=\"TANGRAM__PSP_4__footerULoginBtn\"]",
+    "baiduConfirm": "//*[@id=\"TANGRAM__PSP_4__submit\"]",
+    "baiduIntro": "//*[@id=\"dialog1\"]/div[2]/div/div[2]",
+    "checkBoxClassName": "EOGexf",
+    "codeEnterBtnXPath": "//*[@id=\"xcc21a2\"]/a/span/span",
+    "codeTextBoxXPath": "//*[@id=\"ksrmwk1v\"]",
+    "dbTableName": "ImageRepo",
+    "destnationPath": "/Test/Test",
+    "fileTreeConfirmBtnClassName": "g-button-blue-large",
+    "fileTreeDialogXPath": "//*[@id='fileTreeDialog']",
+    "fileTreeNodeClassName": "treeview-txt",
+    "notFoundID": "share_nofound_des",
+    "transferBtnClassName": "g-button g-button-blue",
+    "transferBtnSelector": "#layoutMain > div.frame-content > div.module-share-header > div > div.slide-show-right > div > div > div.x-button-box > a.g-button.g-button-blue"
+}

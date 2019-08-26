@@ -19,6 +19,17 @@ f = open(outFile, "a+", encoding="utf-8")
 booksInfo = {}  # 全部书本信息，包括封面和描述
 
 
+def checkAndCorrectUrl(str):
+    if str.startswith("http"):
+        return str
+    matchObj = re.match(r".*http.*", str, re.M | re.I)
+    if matchObj:
+        name = matchObj.group(1)
+        return "http{}".format(name)
+    print("error data in checkAndCorrectUrl:{}".format(str))
+    return ""
+
+
 def getFileName(inputStr):
     matchObj = re.match(r".*《(.*)》.*", inputStr, re.M | re.I)
     if matchObj:
@@ -120,7 +131,11 @@ class BookSpider(scrapy.Spider):
                 outInfo["name"] = name
                 outInfo["time"] = dataStr
                 outInfo["channels"].append(
-                    {"channel": text, "url": realDownloadUrl, "secret": secretStr}
+                    {
+                        "channel": text,
+                        "url": checkAndCorrectUrl(realDownloadUrl),
+                        "secret": secretStr,
+                    }
                 )
             # yield (outInfo)
             markDownStr += "### {}. {}: {}\n".format(
