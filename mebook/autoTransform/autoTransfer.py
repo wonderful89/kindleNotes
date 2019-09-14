@@ -280,36 +280,10 @@ class MainFramework(dbOperation):
             logger.info("Located Check Box.")
             logger.debug("Check Box Raw Data : %s" % checkBox)
             checkBox.click()
-        """
-		try:
-			retryCount = 0
-			while (True):
-				try:
-					transferBtn = self.__webDri.find_elements_by_class_name(self.__transferBtnClassName)
-				except common.exceptions.NoSuchElementException:
-					retryCount += 1
-					if (retryCount > 4):
-						logger.error("Locate Transfer Button Timeout.")
-						print ("Locate Transfer Button Timeout.")
-						return -1
-					logger.warn("Can not Locate Transfer Button , Trying %d Times." % retryCount)
-					time.sleep(1)
-					continue
-				except:
-					logger.exception("Error On Locating Transfer Button.")
-					print ("Error On Locating Transfer Button.")
-					return -1
-				break
-		except:
-			pass
 
-		"""
+        transferBtn = None
+        # 转存按钮
         try:
-            # 		transferBtn = WebDriverWait(self.__webDri,2).until(
-            # 			EC.presence_of_element_located(
-            # 				(By.CLASS_NAME,self.__transferBtnClassName)
-            # 			)
-            # 		)
             # 查找转存按钮元素
             transferBtn = WebDriverWait(self.__webDri, 2).until(
                 EC.presence_of_element_located(
@@ -319,7 +293,17 @@ class MainFramework(dbOperation):
         except common.exceptions.TimeoutException:
             logger.exception("Locate Transfer Button Timeout.")
             print("Locate Transfer Button Timeout.")
-            return -1
+
+        if transferBtn == None:
+            try:
+                print("再次去选择transferBtn")
+                selector2 = "#layoutMain > div.frame-content > div.module-share-header > div > div.slide-show-right > div > div > div.x-button-box > a.g-button.g-button-blue > span > span"
+                transferBtn = WebDriverWait(self.__webDri, 2).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, selector2))
+                )
+            except common.exceptions.TimeoutException:
+                logger.exception("Locate Transfer Button Timeout.")
+                print("Locate Transfer Button Timeout.")
 
         logger.debug("Transfer Button Raw Data : %s" % str(transferBtn))
 
@@ -565,17 +549,27 @@ class MainFramework(dbOperation):
             self.__destnationPath = jsonData["destnationPath"]
             self.__fileTreeConfirmBtnClassName = jsonData["fileTreeConfirmBtnClassName"]
             self.__notFoundID = jsonData["notFoundID"]
-            self.__baidu["id"] = jsonData["baiduId"]
-            self.__baidu["secret"] = jsonData["baiduS"]
+            # self.__baidu["id"] = jsonData["baiduId"]
+            # self.__baidu["secret"] = jsonData["baiduS"]
             self.__baidu["idBox"] = jsonData["baiduIdXpath"]
             self.__baidu["secretBox"] = jsonData["baiduSXpath"]
             self.__baidu["changeSecret"] = jsonData["baiduChangeSecret"]
             self.__baidu["ok"] = jsonData["baiduConfirm"]
             self.__baidu["intro"] = jsonData["baiduIntro"]
-
         except:
             logger.exception("Error On Load Configuartion File.")
             print("Error On Load Configuartion File , Please Check The Log File.")
+            sys.exit(1)
+
+        with open("profile.json") as configFile:
+            jsonData = json.load(configFile)
+            configFile.close()
+        try:
+            self.__baidu["id"] = jsonData["baiduId"]
+            self.__baidu["secret"] = jsonData["baiduS"]
+        except:
+            logger.exception("Error On Load Profile File.")
+            print("Error On Load Profile File , Please Check The Log File.")
             sys.exit(1)
 
     # Link Status :
