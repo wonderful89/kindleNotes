@@ -14,19 +14,19 @@ sys.path.append("libs/")
 
 import util
 import book
-import config1
+import config2 as config
 
 lock = threading.RLock()  # 操作allBooks的锁
 
 inputFile = "source.txt"
 inputFile = "My Clippings.txt"
-nowTime = datetime.datetime.now().strftime("_%Y-%m-%d")  # 现在
+nowTime = datetime.datetime.now().strftime("%Y%m%d_")  # 现在
 # print("nowTime = ", nowTime)
 
-allBooks = config1.allBooks
+allBooks = config.allBooks
 
 TEMP_FOLDER = "out"  # 临时文件夹
-FILE_SUFFIX = nowTime + ".markdown"  # 文件后缀名
+FILE_SUFFIX = ".markdown"  # 文件后缀名
 FILE_COUNT_SENTENCE = "FILE_COUNT_SENTENCE"  # 文件总条数
 BEGAN_TIME = "BEGAN_TIME"  # 开始时间
 END_TIME = "END_TIME"  # 结束时间
@@ -105,7 +105,7 @@ for j in range(0, nameOfBooks.__len__()):
             allBooks.append(curBook)
             break
     print("ccc = ", curBook.name)
-    curBook.fileName = nameOfBooks[j] + FILE_SUFFIX
+    curBook.fileName = "{}{}{}".format(nameOfBooks[j], nowTime, FILE_SUFFIX)
     stceOfBookCnt[curBook.fileName] = 0
 
     header = "# " + nameOfBooks[j] + "\n\n"  # 写入书名
@@ -121,7 +121,7 @@ stce_fail_cnt = 0  # 向html文件添加笔记失败次数
 file_list = os.listdir(".")  # 获取当前目录文件名，存放于file_list
 for j in range(0, sentence.__len__()):
     temp = both[j]
-    filename = util.changechar(temp[0][0:80]) + FILE_SUFFIX
+    filename = "{}{}{}".format(util.changechar(temp[0][0:80]), nowTime, FILE_SUFFIX)
     curBook = findBook(filename, allBooks)
     s1 = util.getAddr(temp[1])  # 获取标注位置
     s2 = util.getTime(temp[1])  # 获取标注时间
