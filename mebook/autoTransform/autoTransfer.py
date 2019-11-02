@@ -267,7 +267,7 @@ class MainFramework(dbOperation):
             # 处理多选框的情况。这里没有考虑
             checkBox = WebDriverWait(self.__webDri, 2).until(
                 EC.presence_of_element_located(
-                    (By.CLASS_NAME, self.__checkBoxClassName)
+                    (By.XPATH, self.__checkBoxClassName)
                 )
             )
         except common.exceptions.TimeoutException:

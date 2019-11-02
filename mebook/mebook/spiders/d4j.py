@@ -47,7 +47,7 @@ class D4jBookSpider(scrapy.Spider):
             urls.append(
                 "https://www.d4j.cn/category/book/lishirenwu/page/{}".format(ii)
             )
-        # urls = []
+        urls = ["https://www.d4j.cn/"]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
