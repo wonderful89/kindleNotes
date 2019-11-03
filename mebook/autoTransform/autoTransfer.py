@@ -266,9 +266,7 @@ class MainFramework(dbOperation):
         try:
             # 处理多选框的情况。这里没有考虑
             checkBox = WebDriverWait(self.__webDri, 2).until(
-                EC.presence_of_element_located(
-                    (By.XPATH, self.__checkBoxClassName)
-                )
+                EC.presence_of_element_located((By.XPATH, self.__checkBoxClassName))
             )
         except common.exceptions.TimeoutException:
             logger.exception("No Check Box Found Or Page Load Timeout.")
@@ -517,6 +515,8 @@ class MainFramework(dbOperation):
         if okBtn != None:
             okBtn.click()
 
+        # 需要手动加入验证框
+        time.sleep(8)
         time.sleep(delayDuration)
         try:
             # 介绍页，可能没有

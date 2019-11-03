@@ -8,5 +8,6 @@ else
     echo "复制数据库"
     rm moehui.db
     mv $filePath .
+    # python mainPrg.py -e
     python mainPrg.py
 fi
